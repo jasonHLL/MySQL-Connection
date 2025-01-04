@@ -222,13 +222,12 @@ def update_data():
     if not data:
         return jsonify({"error": "Request body is empty or invalid JSON"}), 400
 
-    # 构建更新字段
     updates = []
     values = []
 
     # 固定 Login_Time 为当前时间
     updates.append("`Login_Time` = %s")
-    values.append(datetime.now().strftime("2024-12-30 12:34:56"))
+    values.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # 遍历请求数据构建其他更新字段
     for key, value in data.items():
@@ -241,16 +240,23 @@ def update_data():
 
     # 拼接 SQL 更新语句
     update_clause = ", ".join(updates)
-    query = f"UPDATE `User` SET {update_clause} WHERE `id` = %s"
+    query = f"UPDATE `User` SET {update_clause} WHERE `Userid` = %s"
 
     # 将主键值固定为 1
     values.append(1)
 
     # 执行 SQL 语句
     try:
+        print("执行的 SQL:", query)
+        print("参数:", values)
         result = db.execute_non_query(query, values)
+
+        if result != "操作成功":
+            return jsonify({"error": result}), 500
+
         return jsonify({"message": "Record updated successfully!"})
     except Exception as e:
+        print(f"SQL 执行失败: {str(e)}")
         return jsonify({"error": f"操作失败: {str(e)}"}), 500
 
 
